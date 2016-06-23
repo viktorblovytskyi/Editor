@@ -10,6 +10,7 @@ $(function () {
 
         defaults: function () {
             return {
+                id:"",
                 width: "0px",
                 height: "0px",
                 color: "red"
@@ -50,6 +51,29 @@ $(function () {
     //  -----------------------------------
     
     var AppView = Backbone.View.extend({
-        el: $("#editor")
+        el: $("#editor"),
+
+        render: function () {
+            console.log("loaded");
+        },
+
+        events: {
+            'click': 'createRectangle',
+            'mousemove': 'createRectangle'
+        },
+
+        initialize: function () {
+            console.log(this.events);
+        },
+
+
+
+        createRectangle: function () {
+            console.log('click');
+        }
     });
+
+    var app = new AppView;
+    console.log(app);
 });
+
