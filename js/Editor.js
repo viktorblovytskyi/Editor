@@ -10,9 +10,9 @@ $(function () {
 
         defaults: function () {
             return {
-                id:"",
-                width: "0px",
-                height: "0px",
+                id: Date.now(),
+                top: "30px",
+                left: "30px",
                 color: "red"
             }
         },
@@ -31,19 +31,48 @@ $(function () {
     //  Rectangle Collection
     //  -----------------------------------
     
-    var RectangleList = Backbone.Collection.extend({
+    // var RectangleList = Backbone.Collection.extend({
+    //
+    //     model: Rectangle,
+    //
+    //     localStorage: new Backbone.LocalStorage("rectangles")
+    //
+    // });
 
-        model: Rectangle,
-        localStorage: new Backbone.LocalStorage("rectangles")
-
-    });
-
-    var Rectangles = new RectangleList;
+    // var Rectangles = new RectangleList;
 
     //  Rectangle View
     //  -----------------------------------
 
+    //<div style=\"position: absolute; top: 30px; left: 30px;;\">TEST</div>
+
     var RectangleView = Backbone.View.extend({
+
+        tagName: 'div',
+        //template: _.template("<div id="+Date.now()+" style=\"position: absolute; top: <%= top %>px; left: <%= left %>px;\">TEST</div> "),
+
+        initialize: function () {
+            //this.render();
+        },
+        
+        render: function () {
+
+            this.el.id = this.model.attributes.id;
+            this.el.style.position = 'absolute';
+            this.el.style.top = this.model.attributes.top;
+            this.el.style.left = this.model.attributes.left;
+            this.$el.html("test");
+            return this;
+        },
+
+        events: {
+            'click' : 'test'
+        },
+
+        test:function(e){
+            console.log(this.$el);
+        }
+
         
     });
     
@@ -51,29 +80,25 @@ $(function () {
     //  -----------------------------------
     
     var AppView = Backbone.View.extend({
+
         el: $("#editor"),
 
-        render: function () {
-            console.log("loaded");
-        },
-
         events: {
-            'click': 'createRectangle',
-            'mousemove': 'createRectangle'
+            'click': 'createRectangle'
         },
 
         initialize: function () {
-            console.log(this.events);
+            //console.log(this.events);
         },
 
-
-
-        createRectangle: function () {
-            console.log('click');
+        createRectangle: function (e) {
+            var rectangle = new Rectangle({top: e.clientY, left: e.clientX });
+            var rectangleView = new RectangleView({model:rectangle});
+            this.$el.append(rectangleView.render().el);
         }
     });
 
     var app = new AppView;
-    console.log(app);
+    //console.log(app);
 });
 
