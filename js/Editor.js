@@ -8,29 +8,45 @@ $(function () {
 
     var Rectangle = Backbone.Model.extend({
 
+
         defaults: function () {
             return {
                 id: Date.now(),
+                firstCordX: 10,
+                firstCordY: 10,
+                secondCordX: 20,
+                secondCordY: 20,
                 top: "30px",
                 left: "30px",
+                width: "10px",
+                height: "10px",
                 color: "red"
+
             }
         },
 
         initialize: function() {
-            if (!this.get("width")) {
-                this.set({"width": this.defaults().width});
-            } else if (!this.get("height")){
-                this.set({"height": this.defaults().height})
-            } else if (!this.get("color")) {
-                this.set({"color": this.defaults().color})
+            if( this.firstCordX > this.secondCordX){
+                this.left = this.secondCordX;
+                this.width = this.firstCordX - this.secondCordY;
+            } else {
+                this.left = this.firstCordX;
+                this.width = this.secondCordX - this.firstCordX;
             }
+
+            if( this.firstCordY > this.secondCordY){
+                this.top = this.secondCordY;
+                this.height = this.firstCordY - this.secondCordY;
+            } else {
+                this.top = this.firstCordY;
+                this.height = this.secondCordY - this.firstCordY;
+            }
+
         }
     });
 
     //  Rectangle View
     //  -----------------------------------
-
 
     var RectangleView = Backbone.View.extend({
 
@@ -46,10 +62,10 @@ $(function () {
             this.el.id = this.model.attributes.id;
             this.el.style.position = 'absolute';
             this.el.class = 'rectangle';
-            this.el.style.cursor = 'move';
+            this.el.style.backgroundColor = this.model.attributes.color;
             this.el.style.top = this.model.attributes.top;
             this.el.style.left = this.model.attributes.left;
-            this.$el.html("test");
+            this.$el.html("TEST");
             return this;
         },
 
@@ -65,6 +81,7 @@ $(function () {
                 e.preventDefault();
                 var frame = document.getElementById('frame');
                 this.changePosition(e.clientY, e.clientX);
+                frame.style.cursor = 'move';
             }.bind(this);
 
             var drop = function (e) {
@@ -73,6 +90,7 @@ $(function () {
                 this.changePosition(e.clientY, e.clientX);
                 frame.removeEventListener('mouseup', drop);
                 frame.removeEventListener('mousemove', drug);
+                frame.style.cursor = 'pointer';
             }.bind(this);
             frame.addEventListener('mousemove', drug);
             frame.addEventListener('mouseup', drop);
@@ -83,6 +101,12 @@ $(function () {
             this.model.attributes.top = top;
             this.model.attributes.left = left;
             this.render();
+        },
+
+        deleteRectangle: function (e) {
+            e.preventDefault();
+            this.remove();
+            this.model.destroy();
         }
 
 
@@ -95,21 +119,47 @@ $(function () {
     
     var AppView = Backbone.View.extend({
 
-        el: $("#frame"),
+        el: $("#editor"),
 
         events: {
-            'dblclick': 'createRectangle'
+            'dblclick div.frame': 'createRectangle'
         },
 
         initialize: function () {
-            //console.log(this.events);
         },
 
         createRectangle: function (e) {
             e.preventDefault();
-            var rectangle =     new Rectangle({top: e.clientY, left: e.clientX }),
-                rectangleView = new RectangleView({model:rectangle}),
-                frame =        document.getElementById('frame');
+            console.log(this.model);
+            var frame = document.getElementById('frame'),
+                cordFirstX = 0,
+                cordFirstY =0,
+                cordSecondX = 0,
+                cordSecondY = 0,
+                rectangle =     new Rectangle({firstCordX: cordFirstX, firstCordY: cordFirstY, secondCordX: cordSecondX, secondCordY: cordSecondY }),
+                rectangleView = new RectangleView({model:rectangle});
+
+            var mouseDown = function (e) {
+                rectangle.firstCordX =  e.clientX;
+                rectangle.firstCordY = e.clientY;
+                frame.removeEventListener('mousedown', mouseDown);
+                frame.addEventListener('mousemove', mouseMove);
+                frame.addEventListener('mouseup', mouseUp);
+            }.bind(this);
+
+            var mouseMove = function (e) {
+                rectangle.secondCordX = e.clientX;
+                rectangle.secondCordY = e.clientY;
+            }.bind(this);
+
+            var mouseUp = function (e) {
+                rectangle.secondCordX = e.clientX;
+                rectangle.secondCordY = e.clientY;
+                frame.removeEventListener('mousemove', mouseMove);
+                frame.removeEventListener('mouseup', mouseUp);
+            }.bind(this);
+
+            frame.addEventListener('mousedown', mouseDown);
 
             frame.appendChild(rectangleView.render().el);
         }
@@ -117,6 +167,5 @@ $(function () {
     });
 
     var app = new AppView;
-    //console.log(app);
 });
 
