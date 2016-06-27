@@ -28,23 +28,9 @@ $(function () {
         }
     });
 
-    //  Rectangle Collection
-    //  -----------------------------------
-    
-    // var RectangleList = Backbone.Collection.extend({
-    //
-    //     model: Rectangle,
-    //
-    //     localStorage: new Backbone.LocalStorage("rectangles")
-    //
-    // });
-
-    // var Rectangles = new RectangleList;
-
     //  Rectangle View
     //  -----------------------------------
 
-    //<div style=\"position: absolute; top: 30px; left: 30px;;\">TEST</div>
 
     var RectangleView = Backbone.View.extend({
 
@@ -52,13 +38,15 @@ $(function () {
         //template: _.template("<div id="+Date.now()+" style=\"position: absolute; top: <%= top %>px; left: <%= left %>px;\">TEST</div> "),
 
         initialize: function () {
-            //this.render();
+            this.render();
         },
         
         render: function () {
 
             this.el.id = this.model.attributes.id;
             this.el.style.position = 'absolute';
+            this.el.class = 'rectangle';
+            this.el.style.cursor = 'pointer';
             this.el.style.top = this.model.attributes.top;
             this.el.style.left = this.model.attributes.left;
             this.$el.html("test");
@@ -66,11 +54,22 @@ $(function () {
         },
 
         events: {
-            'click' : 'test'
+            'mousedown' : 'drugAndDrop'
         },
 
-        test:function(e){
-            console.log(this.$el);
+        drugAndDrop: function (e) {
+            e.preventDefault();
+            var frame = document.getElementById('frame');
+
+            var drop = function (e) {
+                e.preventDefault();
+                var frame = document.getElementById('frame');
+                this.model.attributes.top = e.clientY;
+                this.model.attributes.left = e.clientX;
+                this.render();
+                frame.removeEventListener('mouseup', drop);
+            }.bind(this);
+            frame.addEventListener('mouseup', drop);
         }
 
         
@@ -81,10 +80,10 @@ $(function () {
     
     var AppView = Backbone.View.extend({
 
-        el: $("#editor"),
+        el: $("#frame"),
 
         events: {
-            'click': 'createRectangle'
+            'dblclick': 'createRectangle'
         },
 
         initialize: function () {
@@ -92,10 +91,14 @@ $(function () {
         },
 
         createRectangle: function (e) {
-            var rectangle = new Rectangle({top: e.clientY, left: e.clientX });
-            var rectangleView = new RectangleView({model:rectangle});
-            this.$el.append(rectangleView.render().el);
+            e.preventDefault();
+            var rectangle =     new Rectangle({top: e.clientY, left: e.clientX }),
+                rectangleView = new RectangleView({model:rectangle}),
+                frame =        document.getElementById('frame');
+
+            frame.appendChild(rectangleView.render().el);
         }
+
     });
 
     var app = new AppView;
