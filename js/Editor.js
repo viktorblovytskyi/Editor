@@ -46,7 +46,7 @@ $(function () {
             this.el.id = this.model.attributes.id;
             this.el.style.position = 'absolute';
             this.el.class = 'rectangle';
-            this.el.style.cursor = 'pointer';
+            this.el.style.cursor = 'move';
             this.el.style.top = this.model.attributes.top;
             this.el.style.left = this.model.attributes.left;
             this.$el.html("test");
@@ -61,16 +61,31 @@ $(function () {
             e.preventDefault();
             var frame = document.getElementById('frame');
 
+            var drug = function (e) {
+                e.preventDefault();
+                var frame = document.getElementById('frame');
+                this.changePosition(e.clientY, e.clientX);
+            }.bind(this);
+
             var drop = function (e) {
                 e.preventDefault();
                 var frame = document.getElementById('frame');
-                this.model.attributes.top = e.clientY;
-                this.model.attributes.left = e.clientX;
-                this.render();
+                this.changePosition(e.clientY, e.clientX);
                 frame.removeEventListener('mouseup', drop);
+                frame.removeEventListener('mousemove', drug);
             }.bind(this);
+            frame.addEventListener('mousemove', drug);
             frame.addEventListener('mouseup', drop);
+
+        },
+
+        changePosition: function (top, left) {
+            this.model.attributes.top = top;
+            this.model.attributes.left = left;
+            this.render();
         }
+
+
 
         
     });
